@@ -30,36 +30,59 @@ export function QuestionCard({
 }: QuestionCardProps) {
   const [selectedOption, setSelectedOption] = useState<string | null>(null)
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null)
+  const [audioEnabled, setAudioEnabled] = useState(true)
   const audioRef = useRef<HTMLAudioElement | null>(null)
+  const audioEnabledRef = useRef(audioEnabled)
+  
+  useEffect(() => {
+    audioEnabledRef.current = audioEnabled
+  }, [audioEnabled])
 
-  const playAudio = useCallback(() => {
+  const playSound = useCallback((word: string) => {
     if (audioRef.current) {
       audioRef.current.pause()
+      audioRef.current = null
     }
     speechSynthesis.cancel()
     
-    const audioPath = `/sounds/${german}.mp3`
+    const audioPath = `/sounds/${word}.mp3`
     const audio = new Audio(audioPath)
     audioRef.current = audio
     
     audio.play().catch(() => {
-      speakWithTTS(german)
+      speakWithTTS(word)
     })
     
     audio.onerror = () => {
-      speakWithTTS(german)
+      speakWithTTS(word)
     }
-  }, [german])
+  }, [])
+
+  const handleWordClick = useCallback(() => {
+    playSound(german)
+  }, [german, playSound])
+
+  const toggleAudio = useCallback(() => {
+    setAudioEnabled(prev => !prev)
+    if (audioRef.current) {
+      audioRef.current.pause()
+      audioRef.current = null
+    }
+    speechSynthesis.cancel()
+  }, [])
 
   useEffect(() => {
-    playAudio()
+    if (audioEnabledRef.current) {
+      playSound(german)
+    }
     return () => {
       if (audioRef.current) {
         audioRef.current.pause()
+        audioRef.current = null
       }
       speechSynthesis.cancel()
     }
-  }, [german])
+  }, [german, playSound])
 
   const handleClick = useCallback(
     (option: string) => () => {
@@ -86,9 +109,13 @@ export function QuestionCard({
         <MenuButton onClick={onMenuClick} />
       </div>
       <div className="card-word-row">
-        <h2 className="card-word">{german}</h2>
-        <button className="speak-btn" onClick={playAudio} aria-label="Play pronunciation">
-          🔊
+        <h2 className="card-word clickable" onClick={handleWordClick}>{german}</h2>
+        <button 
+          className={`speak-btn ${!audioEnabled ? 'muted' : ''}`} 
+          onClick={toggleAudio} 
+          aria-label={audioEnabled ? 'Mute audio' : 'Unmute audio'}
+        >
+          {audioEnabled ? '🔊' : '🔇'}
         </button>
       </div>
       <p className="card-hint">

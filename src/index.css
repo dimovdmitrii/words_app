@@ -106,6 +106,19 @@ body {
   line-height: 1.2;
 }
 
+.card-word.clickable {
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.card-word.clickable:hover {
+  color: var(--accent);
+}
+
+.card-word.clickable:active {
+  color: var(--accent-hover);
+}
+
 .speak-btn {
   background: transparent;
   border: none;
@@ -122,6 +135,10 @@ body {
 
 .speak-btn:active {
   transform: scale(0.9);
+}
+
+.speak-btn.muted {
+  opacity: 0.4;
 }
 
 .card-hint {
