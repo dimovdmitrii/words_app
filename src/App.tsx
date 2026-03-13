@@ -1,6 +1,9 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
+
 import type { VocabEntry, LearningWord, AppState } from './types'
+
 import { POOL_SIZE, INITIAL_NEEDED, WRONG_NEEDED, todayStr } from './types'
+
 import {
   shuffle,
   getDueReviews,
