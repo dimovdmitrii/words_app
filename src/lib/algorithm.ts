@@ -74,17 +74,61 @@ export function processWrongReview(word: LearningWord): LearningWord {
   }
 }
 
-/** Pick 4 wrong options from pool (excluding current word and correct answer) */
+type WordType = 'der' | 'die' | 'das' | 'verb' | 'adjective' | 'other'
+
+const VERB_ENDINGS = ['en', 'ern', 'eln']
+const ADJ_ENDINGS = ['ig', 'lich', 'bar', 'sam', 'haft', 'los', 'voll', 'reich', 'arm', 'wert']
+
+function getWordType(german: string): WordType {
+  const lower = german.toLowerCase().trim()
+  
+  if (lower.startsWith('der ')) return 'der'
+  if (lower.startsWith('die ')) return 'die'
+  if (lower.startsWith('das ')) return 'das'
+  
+  const mainWord = lower.split(' ').pop() ?? lower
+  
+  for (const ending of VERB_ENDINGS) {
+    if (mainWord.endsWith(ending) && mainWord.length > 3) return 'verb'
+  }
+  
+  for (const ending of ADJ_ENDINGS) {
+    if (mainWord.endsWith(ending) && mainWord.length > ending.length + 2) return 'adjective'
+  }
+  
+  return 'other'
+}
+
+/** Pick 4 wrong options: mix of same-type and others from pool */
 export function pickWrongOptions(
   pool: LearningWord[],
-  currentId: string,
-  correctRussian: string
+  currentWord: LearningWord
 ): string[] {
-  const candidates = pool
-    .filter((w) => w.id !== currentId && w.russian !== correctRussian)
-    .map((w) => w.russian)
-  const unique = [...new Set(candidates)]
-  return shuffle(unique).slice(0, 4)
+  const currentType = getWordType(currentWord.german)
+  
+  const candidates = pool.filter(
+    (w) => w.id !== currentWord.id && w.russian !== currentWord.russian
+  )
+  
+  const sameType = shuffle(candidates.filter(w => getWordType(w.german) === currentType))
+  const otherType = shuffle(candidates.filter(w => getWordType(w.german) !== currentType))
+  
+  const picked: string[] = []
+  const used = new Set<string>()
+  
+  const addUnique = (words: LearningWord[], count: number) => {
+    for (const w of words) {
+      if (picked.length >= count || used.has(w.russian)) continue
+      picked.push(w.russian)
+      used.add(w.russian)
+    }
+  }
+  
+  addUnique(sameType, 2)
+  addUnique(otherType, 4)
+  addUnique(sameType, 4)
+  
+  return shuffle(picked)
 }
 
 /** Build 5 options: 1 correct + 4 wrong, shuffled */
@@ -92,7 +136,7 @@ export function buildOptions(
   pool: LearningWord[],
   correctWord: LearningWord
 ): string[] {
-  const wrong = pickWrongOptions(pool, correctWord.id, correctWord.russian)
+  const wrong = pickWrongOptions(pool, correctWord)
   const options = [correctWord.russian, ...wrong]
   return shuffle(options)
 }
@@ -103,14 +147,8 @@ export function buildReviewOptions(
   learnedWords: LearningWord[],
   correctWord: LearningWord
 ): string[] {
-  const candidates = [...pool, ...learnedWords].filter(
-    (w) => w.id !== correctWord.id && w.russian !== correctWord.russian
-  )
-  const wrong = pickWrongOptions(
-    candidates as LearningWord[],
-    correctWord.id,
-    correctWord.russian
-  )
+  const candidates = [...pool, ...learnedWords]
+  const wrong = pickWrongOptions(candidates, correctWord)
   const options = [correctWord.russian, ...wrong]
   return shuffle(options)
 }
