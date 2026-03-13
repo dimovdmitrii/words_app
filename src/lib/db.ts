@@ -56,8 +56,26 @@ export function createInitialState(vocabulary: VocabEntry[]): AppState {
     learnedWords: [],
     remainingWordIds: remainingIds,
     totalErrors: 0,
-    lastSaved: new Date().toISOString()
+    lastSaved: new Date().toISOString(),
+    customWords: [],
+    deletedBaseIds: []
   }
+}
+
+/** Generate unique ID for custom word */
+export function generateWordId(): string {
+  return 'custom_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8)
+}
+
+/** Check if word already exists in vocabulary */
+export function isDuplicate(
+  german: string,
+  vocabulary: VocabEntry[],
+  customWords: VocabEntry[]
+): boolean {
+  const normalizedGerman = german.toLowerCase().trim()
+  const allWords = [...vocabulary, ...customWords]
+  return allWords.some(w => w.german.toLowerCase().trim() === normalizedGerman)
 }
 
 /** Clear all progress */

@@ -39,8 +39,6 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:5173` (or the URL Vite prints). Use Chrome/Edge “Add to Home screen” or “Install app” to test as PWA.
-
 ## Build & deploy
 
 ```bash
@@ -52,32 +50,8 @@ Output is in `dist/`. Serve over HTTPS for full PWA (install prompt, service wor
 ## Vocabulary
 
 - **Source**: `public/words.json` (array of `{ id, german, russian }`).
-- Example file has 100 B1–B2 words (IT/job interview). Replace or extend with your own list (e.g. ~2000 words).
+- Example file has ~ 300  B1–B2 words (IT/job interview). Replace or extend with your own list (e.g. ~2000 words).
 
-## Project structure
-
-```
-words_app/
-├── public/
-│   ├── words.json       # Vocabulary (id, german, russian)
-│   └── favicon.svg
-├── src/
-│   ├── types.ts         # VocabEntry, LearningWord, AppState
-│   ├── lib/
-│   │   ├── algorithm.ts # Pool, streak, review schedule, options
-│   │   └── db.ts        # IndexedDB load/save
-│   ├── components/
-│   │   ├── Stats.tsx
-│   │   ├── QuestionCard.tsx
-│   │   ├── ProgressBar.tsx
-│   │   └── RoundComplete.tsx
-│   ├── App.tsx
-│   ├── main.tsx
-│   └── index.css
-├── index.html
-├── vite.config.ts       # React + PWA plugin
-└── package.json
-```
 
 ## PWA
 

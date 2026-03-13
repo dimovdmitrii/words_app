@@ -8,24 +8,29 @@ import {
   buildOptions,
   buildReviewOptions,
   addDays,
-  pickRandomExcluding
+  pickRandomExcluding,
+  toLearningWord
 } from './lib/algorithm'
-import { loadState, saveState, createInitialState, clearState } from './lib/db'
+import { loadState, saveState, createInitialState, clearState, generateWordId, isDuplicate } from './lib/db'
 import { QuestionCard } from './components/QuestionCard'
 import { Menu, MenuButton } from './components/Menu'
+import { AddWordForm } from './components/AddWordForm'
+import { WordList } from './components/WordList'
 
 const WORDS_URL = '/words.json'
 
 type Phase = 'loading' | 'review' | 'learn' | 'round-complete'
 
 export default function App() {
-  const [vocabulary, setVocabulary] = useState<VocabEntry[]>([])
+  const [baseVocabulary, setBaseVocabulary] = useState<VocabEntry[]>([])
   const [state, setState] = useState<AppState | null>(null)
   const [phase, setPhase] = useState<Phase>('loading')
   const [reviewQueue, setReviewQueue] = useState<LearningWord[]>([])
   const [currentIndex, setCurrentIndex] = useState(0)
   const [error, setError] = useState<string | null>(null)
   const [showMenu, setShowMenu] = useState(false)
+  const [showAddWord, setShowAddWord] = useState(false)
+  const [showWordList, setShowWordList] = useState(false)
 
   // First pass queue (words not yet shown once)
   const [firstPassQueue, setFirstPassQueue] = useState<LearningWord[]>([])
@@ -38,6 +43,11 @@ export default function App() {
 
   // Track available options for current word (removed wrong answers disappear)
   const [currentOptions, setCurrentOptions] = useState<string[]>([])
+
+  // Compute active vocabulary: base - deleted + custom
+  const deletedBaseSet = new Set(state?.deletedBaseIds ?? [])
+  const activeBaseWords = baseVocabulary.filter(w => !deletedBaseSet.has(w.id))
+  const vocabulary = [...activeBaseWords, ...(state?.customWords ?? [])]
 
   const totalWords = vocabulary.length
   const learnedCount = state?.learnedIds.length ?? 0
@@ -100,6 +110,16 @@ export default function App() {
         needsSave = true
       }
       
+      if (!Array.isArray(saved.customWords)) {
+        migratedState = { ...migratedState, customWords: [] }
+        needsSave = true
+      }
+      
+      if (!Array.isArray(saved.deletedBaseIds)) {
+        migratedState = { ...migratedState, deletedBaseIds: [] }
+        needsSave = true
+      }
+      
       if (needsSave) {
         await saveState(migratedState)
       }
@@ -143,7 +163,7 @@ export default function App() {
         const data = await res.json()
         const words: VocabEntry[] = Array.isArray(data) ? data : data.words ?? []
         if (cancelled) return
-        setVocabulary(words)
+        setBaseVocabulary(words)
         await initApp(words)
       } catch (e) {
         if (!cancelled) setError(e instanceof Error ? e.message : 'Load failed')
@@ -332,6 +352,107 @@ export default function App() {
 
   const openMenu = useCallback(() => setShowMenu(true), [])
   const closeMenu = useCallback(() => setShowMenu(false), [])
+  
+  const openAddWord = useCallback(() => {
+    setShowMenu(false)
+    setShowAddWord(true)
+  }, [])
+  const closeAddWord = useCallback(() => setShowAddWord(false), [])
+  
+  const openWordList = useCallback(() => {
+    setShowMenu(false)
+    setShowWordList(true)
+  }, [])
+  const closeWordList = useCallback(() => setShowWordList(false), [])
+
+  const handleAddWord = useCallback((german: string, russian: string): string | null => {
+    if (!state) return 'App not loaded'
+    
+    if (isDuplicate(german, baseVocabulary, state.customWords)) {
+      return 'This word already exists'
+    }
+    
+    const newWord: VocabEntry = {
+      id: generateWordId(),
+      german,
+      russian
+    }
+    
+    const learningWord = toLearningWord(newWord)
+    
+    const newState: AppState = {
+      ...state,
+      customWords: [...state.customWords, newWord],
+      learningPool: state.learningPool.length < POOL_SIZE 
+        ? [...state.learningPool, learningWord]
+        : state.learningPool,
+      remainingWordIds: state.learningPool.length >= POOL_SIZE
+        ? [...state.remainingWordIds, newWord.id]
+        : state.remainingWordIds
+    }
+    
+    if (state.learningPool.length < POOL_SIZE) {
+      setCurrentWord(learningWord)
+      lastShownIdRef.current = learningWord.id
+    }
+    
+    persist(newState)
+    return null
+  }, [state, baseVocabulary, persist])
+
+  const handleDeleteBaseWord = useCallback((id: string) => {
+    if (!state) return
+    
+    const newState: AppState = {
+      ...state,
+      deletedBaseIds: [...state.deletedBaseIds, id],
+      learningPool: state.learningPool.filter(w => w.id !== id),
+      learnedWords: state.learnedWords.filter(w => w.id !== id),
+      learnedIds: state.learnedIds.filter(i => i !== id),
+      remainingWordIds: state.remainingWordIds.filter(i => i !== id)
+    }
+    
+    if (currentWord?.id === id) {
+      const nextWord = pickRandomExcluding(newState.learningPool, id)
+      setCurrentWord(nextWord)
+      lastShownIdRef.current = nextWord?.id ?? null
+    }
+    
+    persist(newState)
+  }, [state, currentWord, persist])
+
+  const handleDeleteCustomWord = useCallback((id: string) => {
+    if (!state) return
+    
+    const newState: AppState = {
+      ...state,
+      customWords: state.customWords.filter(w => w.id !== id),
+      learningPool: state.learningPool.filter(w => w.id !== id),
+      learnedWords: state.learnedWords.filter(w => w.id !== id),
+      learnedIds: state.learnedIds.filter(i => i !== id),
+      remainingWordIds: state.remainingWordIds.filter(i => i !== id)
+    }
+    
+    if (currentWord?.id === id) {
+      const nextWord = pickRandomExcluding(newState.learningPool, id)
+      setCurrentWord(nextWord)
+      lastShownIdRef.current = nextWord?.id ?? null
+    }
+    
+    persist(newState)
+  }, [state, currentWord, persist])
+
+  const handleRestoreBaseWord = useCallback((id: string) => {
+    if (!state) return
+    
+    const newState: AppState = {
+      ...state,
+      deletedBaseIds: state.deletedBaseIds.filter(i => i !== id),
+      remainingWordIds: [...state.remainingWordIds, id]
+    }
+    
+    persist(newState)
+  }, [state, persist])
 
   const menuElement = showMenu ? (
     <Menu
@@ -342,6 +463,24 @@ export default function App() {
       onContinue={handleMenuContinue}
       onReset={handleReset}
       onClose={closeMenu}
+      onAddWord={openAddWord}
+      onManageWords={openWordList}
+    />
+  ) : null
+
+  const addWordElement = showAddWord ? (
+    <AddWordForm onAdd={handleAddWord} onClose={closeAddWord} />
+  ) : null
+
+  const wordListElement = showWordList ? (
+    <WordList
+      baseWords={baseVocabulary}
+      customWords={state?.customWords ?? []}
+      deletedBaseIds={state?.deletedBaseIds ?? []}
+      onDeleteBase={handleDeleteBaseWord}
+      onDeleteCustom={handleDeleteCustomWord}
+      onRestoreBase={handleRestoreBaseWord}
+      onClose={closeWordList}
     />
   ) : null
 
@@ -381,6 +520,8 @@ export default function App() {
           </button>
         </div>
         {menuElement}
+        {addWordElement}
+        {wordListElement}
       </div>
     )
   }
@@ -397,6 +538,8 @@ export default function App() {
           isReview
         />
         {menuElement}
+        {addWordElement}
+        {wordListElement}
       </div>
     )
   }
@@ -412,6 +555,8 @@ export default function App() {
           onMenuClick={openMenu}
         />
         {menuElement}
+        {addWordElement}
+        {wordListElement}
       </div>
     )
   }
@@ -427,6 +572,8 @@ export default function App() {
         <p className="card-hint">Add more words or come back later for reviews</p>
       </div>
       {menuElement}
+      {addWordElement}
+      {wordListElement}
     </div>
   )
 }

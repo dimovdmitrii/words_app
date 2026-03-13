@@ -21,6 +21,8 @@ export interface AppState {
   remainingWordIds: string[] // shuffled IDs of words not yet in pool
   totalErrors: number // total mistakes made
   lastSaved: string // ISO date
+  customWords: VocabEntry[] // user-added words
+  deletedBaseIds: string[] // IDs of deleted base vocabulary words
 }
 
 export const POOL_SIZE = 15
