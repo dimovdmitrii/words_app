@@ -256,6 +256,7 @@ body {
 }
 
 .menu-screen {
+  min-height: 75vh;
   position: relative;
   width: 100%;
   max-width: 400px;
@@ -360,6 +361,8 @@ body {
 
 /* Add Word Form */
 .add-word-form form {
+  min-height: 75vh;
+  /* max-height: 65vh; */
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -408,7 +411,7 @@ body {
 
 /* Word List */
 .word-list-screen {
-  max-height: 90vh;
+  min-height: 75vh;
   display: flex;
   flex-direction: column;
 }
@@ -542,4 +545,462 @@ body {
   text-align: center;
   padding: 24px;
   margin: 0;
+}
+
+/* ═══════════════════════════════════════
+   Words Manager — combined modal
+═══════════════════════════════════════ */
+
+.wm-screen {
+  height: 75vh;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 420px;
+  background: var(--surface);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+}
+
+/* Header */
+.wm-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 16px 14px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  flex-shrink: 0;
+  gap: 10px;
+}
+
+.wm-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.wm-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+  white-space: nowrap;
+}
+
+.wm-header-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 20px;
+  background: rgba(56, 189, 248, 0.15);
+  color: var(--accent);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+}
+
+.wm-close-btn {
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  flex-shrink: 0;
+  transition: color 0.15s, background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.wm-close-btn:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+/* Scrollable content area */
+.wm-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Empty state */
+.wm-empty {
+  color: var(--muted);
+  text-align: center;
+  padding: 40px 16px;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* ── Bottom tab navigation ── */
+.wm-tabs {
+  display: flex;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px));
+  gap: 4px;
+  flex-shrink: 0;
+  background: var(--surface);
+}
+
+.wm-tab-btn {
+  flex: 1;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 8px 4px;
+  background: transparent;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  color: var(--muted);
+  transition: color 0.15s, background 0.15s;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 500;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.wm-tab-btn:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.wm-tab-btn.active {
+  color: var(--accent);
+  background: rgba(56, 189, 248, 0.1);
+}
+
+.wm-tab-icon {
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+/* Active filter dot indicator on Categories tab */
+.wm-tab-dot {
+  position: absolute;
+  top: 6px;
+  right: calc(50% - 12px);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+/* ── Categories tab ── */
+.cat-all-row {
+  display: flex;
+  align-items: center;
+  padding: 14px 14px;
+  background: var(--bg);
+  border-radius: 12px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  gap: 12px;
+  transition: border-color 0.15s, background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  margin-bottom: 4px;
+}
+
+.cat-all-row.active {
+  border-color: rgba(56, 189, 248, 0.4);
+  background: rgba(56, 189, 248, 0.07);
+}
+
+.cat-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.07);
+  margin: 10px 0;
+}
+
+.cat-list {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.cat-item {
+  display: flex;
+  align-items: center;
+  padding: 13px 14px;
+  background: var(--bg);
+  border-radius: 12px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  gap: 12px;
+  transition: border-color 0.12s, background 0.12s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.cat-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: background 0.15s, box-shadow 0.15s;
+}
+
+.cat-name {
+  flex: 1;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cat-count {
+  font-size: 0.75rem;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.07);
+  padding: 2px 9px;
+  border-radius: 20px;
+  flex-shrink: 0;
+}
+
+.cat-check {
+  font-size: 0.9rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.cat-apply-bar {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.cat-apply-feedback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px;
+  border-radius: var(--radius);
+  background: rgba(74, 222, 128, 0.1);
+  color: var(--correct);
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.cat-apply-check {
+  font-size: 1.1rem;
+}
+
+/* ── Words sub-tabs ── */
+.wm-subtabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.wm-subtab {
+  flex: 1;
+  padding: 9px 6px;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.wm-subtab.active {
+  color: var(--text);
+  background: var(--bg);
+  border-color: var(--accent);
+}
+
+.wm-search {
+  width: 100%;
+  padding: 11px 14px;
+  font: inherit;
+  font-size: 0.95rem;
+  color: var(--text);
+  background: var(--bg);
+  border: 2px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  outline: none;
+  margin-bottom: 12px;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+}
+
+.wm-search:focus {
+  border-color: var(--accent);
+}
+
+.wm-search::placeholder {
+  color: var(--muted);
+  opacity: 0.6;
+}
+
+/* Word list */
+.wm-word-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.wm-word-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  background: var(--bg);
+  border-radius: 10px;
+  gap: 10px;
+}
+
+.wm-word-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.wm-word-german {
+  font-size: 0.93rem;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wm-word-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+
+.wm-word-russian {
+  font-size: 0.82rem;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 1;
+  min-width: 0;
+}
+
+.wm-cat-tag {
+  font-size: 0.66rem;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 4px;
+  border: 1px solid;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.wm-action-btn {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.wm-action-btn.delete {
+  color: var(--wrong);
+  border: 1px solid rgba(248, 113, 113, 0.25);
+}
+
+.wm-action-btn.delete:hover {
+  background: rgba(248, 113, 113, 0.12);
+}
+
+.wm-action-btn.restore {
+  color: var(--correct);
+  border: 1px solid rgba(74, 222, 128, 0.25);
+}
+
+.wm-action-btn.restore:hover {
+  background: rgba(74, 222, 128, 0.12);
+}
+
+/* ── Add word form ── */
+.wm-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.wm-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.wm-form-label {
+  font-size: 0.82rem;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.wm-form-input {
+  padding: 13px 14px;
+  font: inherit;
+  font-size: 0.95rem;
+  color: var(--text);
+  background: var(--bg);
+  border: 2px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius);
+  outline: none;
+  transition: border-color 0.15s;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.wm-form-input:focus {
+  border-color: var(--accent);
+}
+
+.wm-form-input::placeholder {
+  color: var(--muted);
+  opacity: 0.6;
+}
+
+.wm-form-error {
+  color: var(--wrong);
+  font-size: 0.85rem;
+  text-align: center;
+  margin: 0;
+}
+
+.wm-form-success {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  border-radius: var(--radius);
+  background: rgba(74, 222, 128, 0.1);
+  color: var(--correct);
+  font-weight: 600;
+  font-size: 0.9rem;
 }

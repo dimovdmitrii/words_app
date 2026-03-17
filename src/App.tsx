@@ -17,9 +17,8 @@ import {
 import { loadState, saveState, createInitialState, clearState, generateWordId, isDuplicate } from './lib/db'
 import { QuestionCard } from './components/QuestionCard'
 import { Menu, MenuButton } from './components/Menu'
-import { AddWordForm } from './components/AddWordForm'
-import { WordList } from './components/WordList'
-import { CategorySelector } from './components/CategorySelector'
+import { WordsManager } from './components/WordsManager'
+import type { ManagerTab } from './components/WordsManager'
 
 const WORDS_URL = '/words.json'
 
@@ -33,9 +32,8 @@ export default function App() {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [error, setError] = useState<string | null>(null)
   const [showMenu, setShowMenu] = useState(false)
-  const [showAddWord, setShowAddWord] = useState(false)
-  const [showWordList, setShowWordList] = useState(false)
-  const [showCategorySelector, setShowCategorySelector] = useState(false)
+  const [showWordsManager, setShowWordsManager] = useState(false)
+  const [wordsManagerTab, setWordsManagerTab] = useState<ManagerTab>('categories')
 
   // First pass queue (words not yet shown once)
   const [firstPassQueue, setFirstPassQueue] = useState<LearningWord[]>([])
@@ -396,34 +394,18 @@ export default function App() {
 
   const openMenu = useCallback(() => setShowMenu(true), [])
   const closeMenu = useCallback(() => setShowMenu(false), [])
-  
-  const openAddWord = useCallback(() => {
-    setShowMenu(false)
-    setShowAddWord(true)
-  }, [])
-  const closeAddWord = useCallback(() => setShowAddWord(false), [])
-  
-  const openWordList = useCallback(() => {
-    setShowMenu(false)
-    setShowWordList(true)
-  }, [])
-  const closeWordList = useCallback(() => setShowWordList(false), [])
 
-  const openCategorySelector = useCallback(() => {
+  const openWordsManager = useCallback((tab: ManagerTab = 'categories') => {
     setShowMenu(false)
-    setShowCategorySelector(true)
+    setWordsManagerTab(tab)
+    setShowWordsManager(true)
   }, [])
-  const closeCategorySelector = useCallback(() => setShowCategorySelector(false), [])
+  const closeWordsManager = useCallback(() => setShowWordsManager(false), [])
 
   const handleUpdateCategories = useCallback(
     (categories: string[]) => {
       if (!state) return
-      const newState: AppState = {
-        ...state,
-        activeCategories: categories
-      }
-      persist(newState)
-      setShowCategorySelector(false)
+      persist({ ...state, activeCategories: categories })
     },
     [state, persist]
   )
@@ -532,25 +514,7 @@ export default function App() {
       onContinue={handleMenuContinue}
       onReset={handleReset}
       onClose={closeMenu}
-      onAddWord={openAddWord}
-      onManageWords={openWordList}
-      onSelectCategories={openCategorySelector}
-    />
-  ) : null
-
-  const addWordElement = showAddWord ? (
-    <AddWordForm onAdd={handleAddWord} onClose={closeAddWord} />
-  ) : null
-
-  const wordListElement = showWordList ? (
-    <WordList
-      baseWords={baseVocabulary}
-      customWords={state?.customWords ?? []}
-      deletedBaseIds={state?.deletedBaseIds ?? []}
-      onDeleteBase={handleDeleteBaseWord}
-      onDeleteCustom={handleDeleteCustomWord}
-      onRestoreBase={handleRestoreBaseWord}
-      onClose={closeWordList}
+      onOpenLibrary={openWordsManager}
     />
   ) : null
 
@@ -562,12 +526,21 @@ export default function App() {
     )
   )
 
-  const categorySelectorElement = showCategorySelector ? (
-    <CategorySelector
+  const wordsManagerElement = showWordsManager ? (
+    <WordsManager
+      initialTab={wordsManagerTab}
       categories={allCategories}
       activeCategories={activeCategories}
-      onChange={handleUpdateCategories}
-      onClose={closeCategorySelector}
+      allWords={allWords}
+      onUpdateCategories={handleUpdateCategories}
+      baseWords={baseVocabulary}
+      customWords={state?.customWords ?? []}
+      deletedBaseIds={state?.deletedBaseIds ?? []}
+      onDeleteBase={handleDeleteBaseWord}
+      onDeleteCustom={handleDeleteCustomWord}
+      onRestoreBase={handleRestoreBaseWord}
+      onAddWord={handleAddWord}
+      onClose={closeWordsManager}
     />
   ) : null
 
@@ -607,8 +580,7 @@ export default function App() {
           </button>
         </div>
         {menuElement}
-        {addWordElement}
-        {wordListElement}
+        {wordsManagerElement}
       </div>
     )
   }
@@ -625,9 +597,7 @@ export default function App() {
           isReview
         />
         {menuElement}
-        {addWordElement}
-        {wordListElement}
-        {categorySelectorElement}
+        {wordsManagerElement}
       </div>
     )
   }
@@ -643,9 +613,7 @@ export default function App() {
           onMenuClick={openMenu}
         />
         {menuElement}
-        {addWordElement}
-        {wordListElement}
-        {categorySelectorElement}
+        {wordsManagerElement}
       </div>
     )
   }
@@ -661,9 +629,7 @@ export default function App() {
         <p className="card-hint">Add more words or come back later for reviews</p>
       </div>
       {menuElement}
-      {addWordElement}
-      {wordListElement}
-      {categorySelectorElement}
+      {wordsManagerElement}
     </div>
   )
 }

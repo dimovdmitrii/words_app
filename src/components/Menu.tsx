@@ -1,3 +1,5 @@
+import type { ManagerTab } from './WordsManager'
+
 interface MenuProps {
   totalWords: number
   learnedCount: number
@@ -6,9 +8,7 @@ interface MenuProps {
   onContinue: () => void
   onReset: () => void
   onClose: () => void
-  onAddWord: () => void
-  onManageWords: () => void
-  onSelectCategories: () => void
+  onOpenLibrary: (tab: ManagerTab) => void
 }
 
 export function Menu({
@@ -19,9 +19,7 @@ export function Menu({
   onContinue,
   onReset,
   onClose,
-  onAddWord,
-  onManageWords,
-  onSelectCategories
+  onOpenLibrary,
 }: MenuProps) {
   const handleReset = () => {
     if (window.confirm('Reset all progress? This cannot be undone.')) {
@@ -36,7 +34,7 @@ export function Menu({
           ×
         </button>
         <h1 className="menu-title">Statistics</h1>
-        
+
         <div className="stats-list">
           <div className="stats-row">
             <span className="stats-label">Total words:</span>
@@ -57,18 +55,14 @@ export function Menu({
         </div>
 
         <div className="menu-buttons">
-          <button className="menu-btn" onClick={onContinue}>
+          <button className="menu-btn primary" onClick={onContinue}>
             Continue learning
           </button>
-          <button className="menu-btn" onClick={onAddWord}>
-            Add Word
-          </button>
-          <button className="menu-btn" onClick={onManageWords}>
+         
+          <button className="menu-btn" onClick={() => onOpenLibrary('words')}>
             Manage Words
           </button>
-          <button className="menu-btn" onClick={onSelectCategories}>
-            Categories
-          </button>
+         
           <button className="menu-btn danger" onClick={handleReset}>
             Reset Statistics
           </button>
