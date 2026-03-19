@@ -11,6 +11,16 @@ function speakWithTTS(text: string) {
   }
 }
 
+function buildLocalSoundPath(word: string): string {
+  return `/sounds/${encodeURIComponent(word.trim())}.mp3`
+}
+
+function buildGoogleTtsUrl(word: string): string {
+  const text = encodeURIComponent(word.trim())
+  // tw-ob endpoint is commonly used by gTTS-compatible playback.
+  return `https://translate.google.com/translate_tts?ie=UTF-8&q=${text}&tl=de&client=tw-ob`
+}
+
 interface QuestionCardProps {
   german: string
   options: string[]
@@ -45,16 +55,25 @@ export function QuestionCard({
     }
     speechSynthesis.cancel()
     
-    const audioPath = `/sounds/${word}.mp3`
-    const audio = new Audio(audioPath)
+    const localAudioPath = buildLocalSoundPath(word)
+    const audio = new Audio(localAudioPath)
     audioRef.current = audio
     
     audio.play().catch(() => {
-      speakWithTTS(word)
+      // Fallback for newly added/generated words without local mp3 file.
+      const webTtsAudio = new Audio(buildGoogleTtsUrl(word))
+      audioRef.current = webTtsAudio
+      webTtsAudio.play().catch(() => {
+        speakWithTTS(word)
+      })
     })
     
     audio.onerror = () => {
-      speakWithTTS(word)
+      const webTtsAudio = new Audio(buildGoogleTtsUrl(word))
+      audioRef.current = webTtsAudio
+      webTtsAudio.play().catch(() => {
+        speakWithTTS(word)
+      })
     }
   }, [])
 
