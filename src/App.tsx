@@ -20,7 +20,7 @@ import { Menu, MenuButton } from './components/Menu'
 import { WordsManager } from './components/WordsManager'
 import type { ManagerTab } from './components/WordsManager'
 
-const WORDS_URL = '/words.json'
+const WORDS_URL = `${import.meta.env.BASE_URL}words.json`.replace(/\/{2,}/g, '/')
 
 type Phase = 'loading' | 'review' | 'learn' | 'round-complete'
 

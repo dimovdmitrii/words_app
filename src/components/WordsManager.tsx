@@ -24,6 +24,8 @@ const TAB_TITLES: Record<ManagerTab, string> = {
   generate: 'Generate Words',
 }
 
+const GENERATE_WORDS_URL = `${(import.meta.env.VITE_API_ORIGIN || '').replace(/\/$/, '')}/api/generate-words`
+
 interface WordsManagerProps {
   initialTab?: ManagerTab
   categories: string[]
@@ -226,7 +228,7 @@ export function WordsManager({
     count: number,
     excludedGerman: string[]
   ): Promise<Array<{ german: string; russian: string }>> => {
-    const response = await fetch('/api/generate-words', {
+    const response = await fetch(GENERATE_WORDS_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

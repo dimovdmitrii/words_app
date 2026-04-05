@@ -1,14 +1,23 @@
 import { useCallback, useState, useEffect, useRef } from 'react'
 import { MenuButton } from './Menu'
 
+/** Android WebView often has no speechSynthesis; bare `speechSynthesis` throws ReferenceError. */
+function getSpeechSynthesis(): SpeechSynthesis | undefined {
+  return (globalThis as unknown as { speechSynthesis?: SpeechSynthesis }).speechSynthesis
+}
+
+function cancelSpeechSynthesisSafe() {
+  getSpeechSynthesis()?.cancel()
+}
+
 function speakWithTTS(text: string) {
-  if ('speechSynthesis' in window) {
-    speechSynthesis.cancel()
-    const utterance = new SpeechSynthesisUtterance(text)
-    utterance.lang = 'de-DE'
-    utterance.rate = 0.9
-    speechSynthesis.speak(utterance)
-  }
+  const ss = getSpeechSynthesis()
+  if (!ss) return
+  ss.cancel()
+  const utterance = new SpeechSynthesisUtterance(text)
+  utterance.lang = 'de-DE'
+  utterance.rate = 0.9
+  ss.speak(utterance)
 }
 
 function buildLocalSoundPath(word: string): string {
@@ -53,8 +62,8 @@ export function QuestionCard({
       audioRef.current.pause()
       audioRef.current = null
     }
-    speechSynthesis.cancel()
-    
+    cancelSpeechSynthesisSafe()
+
     const localAudioPath = buildLocalSoundPath(word)
     const audio = new Audio(localAudioPath)
     audioRef.current = audio
@@ -87,7 +96,7 @@ export function QuestionCard({
       audioRef.current.pause()
       audioRef.current = null
     }
-    speechSynthesis.cancel()
+    cancelSpeechSynthesisSafe()
   }, [])
 
   useEffect(() => {
@@ -99,7 +108,7 @@ export function QuestionCard({
         audioRef.current.pause()
         audioRef.current = null
       }
-      speechSynthesis.cancel()
+      cancelSpeechSynthesisSafe()
     }
   }, [german, playSound])
 
