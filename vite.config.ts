@@ -255,7 +255,8 @@ export default defineConfig(({ mode }) => {
                 description: 'German vocabulary trainer – learn words with spaced repetition',
                 theme_color: '#0f172a',
                 background_color: '#0f172a',
-                display: 'fullscreen',
+                // "fullscreen" breaks viewport height on many Android WebViews/PWA; "standalone" is the safe default.
+                display: 'standalone',
                 orientation: 'portrait',
                 scope: '/',
                 start_url: '/',
