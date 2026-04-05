@@ -36,9 +36,19 @@ const pad = { r: 1, g: 141, b: 251, alpha: 1 }
 const legacy = { mdpi: 48, hdpi: 72, xhdpi: 96, xxhdpi: 144, xxxhdpi: 192 }
 const adaptiveFg = { mdpi: 108, hdpi: 162, xhdpi: 216, xxhdpi: 324, xxxhdpi: 432 }
 
+/** Сильное DEFLATE-сжатие — без этого 15 PNG в mipmap легко дают +3–6 МБ к APK/AAB */
+const pngOut = {
+  compressionLevel: 9,
+  adaptiveFiltering: true,
+  effort: 10
+}
+
 async function renderIcon(sourcePath, size, outFile, transparentBg) {
   const bg = transparentBg ? { r: 0, g: 0, b: 0, alpha: 0 } : pad
-  await sharp(sourcePath).resize(size, size, { fit: 'contain', background: bg }).png().toFile(outFile)
+  await sharp(sourcePath)
+    .resize(size, size, { fit: 'contain', background: bg })
+    .png(pngOut)
+    .toFile(outFile)
 }
 
 const sourcePath = resolveSourcePath()

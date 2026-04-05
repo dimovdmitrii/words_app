@@ -250,8 +250,8 @@ export default defineConfig(({ mode }) => {
               registerType: 'autoUpdate',
               includeAssets: ['favicon.svg', 'words.json'],
               manifest: {
-                name: 'Deutsch Vokabeln',
-                short_name: 'Vokabeln',
+                name: 'Vocab',
+                short_name: 'Vocab',
                 description: 'German vocabulary trainer – learn words with spaced repetition',
                 theme_color: '#0f172a',
                 background_color: '#0f172a',
