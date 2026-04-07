@@ -248,7 +248,7 @@ export default defineConfig(({ mode }) => {
         : [
             VitePWA({
               registerType: 'autoUpdate',
-              includeAssets: ['favicon.svg', 'words.json'],
+              includeAssets: ['favicon.png', 'words.json'],
               manifest: {
                 name: 'Vocab',
                 short_name: 'Vocab',
@@ -261,8 +261,8 @@ export default defineConfig(({ mode }) => {
                 scope: '/',
                 start_url: '/',
                 icons: [
-                  { src: '/favicon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
-                  { src: '/favicon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'maskable' }
+                  { src: '/favicon.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+                  { src: '/favicon.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' }
                 ],
                 categories: ['education']
               },
